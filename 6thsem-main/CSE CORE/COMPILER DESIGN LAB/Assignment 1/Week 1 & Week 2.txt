@@ -1,0 +1,225 @@
+Week 1 -
+
+1) Write a C program to check if a user given string is a valid identifier or not?
+
+Code -
+
+#include <stdio.h>
+#include <string.h>
+
+void checkidentifier(char inputt[])
+{
+    if (inputt[0] == '_' || (inputt[0] >= 'A' && inputt[0] <= 'Z') || (inputt[0] >= 'a' && inputt[0] <= 'z'))
+    {
+        printf("Valid Identifier");
+    }
+    else
+    {
+        printf("Invalid Identifier");
+    }
+}
+
+int main()
+{
+    char inputt[100];
+    printf("Insert a string to check - ");
+    gets(inputt);
+    checkidentifier(inputt);
+}
+
+Output - 
+
+Insert a string to check - _ABC
+Valid Identifier
+
+2) Write a C program to check if a user given C program statement is a valid Comment or not?
+
+Code - 
+
+#include <stdio.h>
+#include <string.h>
+
+void checkcomment(char inputt[])
+{
+    if (inputt[0] == '/')
+    {
+        if (inputt[1] == '/' || (inputt[1] == '*' && inputt[strlen(inputt) - 1] == '/' && inputt[strlen(inputt) - 2] == '*'))
+        {
+            printf("This is a Comment");
+        }
+        else
+        {
+            printf("This is not a Comment");
+        }
+    }
+    else
+    {
+        printf("This is not a Comment");
+    }
+}
+
+int main()
+{
+    char inputt[100];
+    printf("Insert a string to check - ");
+    gets(inputt);
+    checkcomment(inputt);
+    return 0;
+}
+
+Output - 
+
+Insert a string to check - // comment
+This is a comment
+
+Week 2 - 
+
+3) Write a C program to read a program written in a file and remove all comments. After removing all comments, rewrite the program in a separate file.
+
+code - 
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+void removeComments(FILE *sourceFile, FILE *outputFile) {
+    int currentChar, nextChar;
+    while ((currentChar = fgetc(sourceFile)) != EOF) {
+        if (currentChar == '/') {
+            nextChar = fgetc(sourceFile);
+            if (nextChar == '/') {
+                while ((currentChar = fgetc(sourceFile)) != '\n' && currentChar != EOF);
+            } else if (nextChar == '*') {
+                do {
+                    while ((currentChar = fgetc(sourceFile)) != '*')
+                        if (currentChar == EOF) break;
+                    nextChar = fgetc(sourceFile);
+                } while (nextChar != '/' && currentChar != EOF);
+            } else {
+                fputc(currentChar, outputFile);
+                fputc(nextChar, outputFile);
+            }
+        } else {
+            fputc(currentChar, outputFile);
+        }
+    }
+}
+int main() {
+    FILE *sourceFile, *outputFile;
+    char sourceFileName[100], outputFileName[100];
+
+    printf("Enter the name of the source code file: ");
+    scanf("%s", sourceFileName);
+
+    sourceFile = fopen(sourceFileName, "r");
+
+    if (sourceFile == NULL) {
+        printf("Error opening source file.\n");
+        return 1;
+    }
+
+    printf("Enter the name of the output file: ");
+    scanf("%s", outputFileName);
+
+    outputFile = fopen(outputFileName, "w");
+
+    if (outputFile == NULL) {
+        printf("Error opening output file.\n");
+        fclose(sourceFile);
+        return 1;
+    }
+
+    removeComments(sourceFile, outputFile);
+
+    printf("Comments removed successfully. Check the file %s\n", outputFileName);
+
+    fclose(sourceFile);
+    fclose(outputFile);
+
+    return 0;
+}
+
+Output - 
+
+Enter the name of the source code file: file1.txt
+Enter the name of the output file: file2.txt
+Comments removed successfully. Check the file file2.txt
+
+4) Write a C program to convert an infix statement into a postfix statement.
+
+code -
+
+#include <stdio.h> 
+#include <string.h> 
+#include <stdlib.h>
+#include <ctype.h>
+#define MAX_EXPR_SIZE 100
+
+int precedence(char operatorr) { 
+    switch (operatorr) {
+        case '+':
+        case '-':
+            return 1;
+        case '*':
+        case '/':
+            return 2;
+        case '^':
+            return 3;
+        default:
+            return -1;
+    }
+}
+
+int isOperator(char ch) {
+    return (ch == '+' || ch == '-' || ch == '*' || ch == '/' || ch == '^');
+}
+
+char *infixToPostfix(char *infix) { 
+    int i, j;
+    int len = strlen(infix);
+    char *postfix = (char *)malloc(sizeof(char) * (len + 2)); 
+    char stack[MAX_EXPR_SIZE];
+    int top = -1;
+
+    for (i = 0, j = 0; i < len; i++) {
+        if (infix[i] == ' ' || infix[i] == '\t') 
+            continue;
+        if (isalnum(infix[i])) { 
+            postfix[j++] = infix[i];
+        } else if (infix[i] == '(') { 
+            stack[++top] = infix[i];
+        } else if (infix[i] == ')') {
+            while (top > -1 && stack[top] != '(') 
+                postfix[j++] = stack[top--];
+            if (top > -1 && stack[top] != '(') 
+                return "Invalid Expression";
+            else
+                top--;
+        } else if (isOperator(infix[i])) {
+            while (top > -1 && precedence(stack[top]) >= precedence(infix[i])) 
+                postfix[j++] = stack[top--];
+            stack[++top] = infix[i];
+        }
+    }
+
+    while (top > -1)
+        postfix[j++] = stack[top--];
+    
+    postfix[j] = '\0'; 
+    return postfix;
+}
+
+int main() {
+    char infix[MAX_EXPR_SIZE]; 
+    printf("Enter an infix expression: "); 
+    fgets(infix, sizeof(infix), stdin);
+    char *postfix = infixToPostfix(infix); 
+    printf("Postfix expression: %s\n", postfix); 
+    free(postfix);
+    return 0;
+}
+
+Output - 
+
+Enter a infix Statement: ((A + B) – C * (D / E)) + F
+PostFix Expression: AB+CDE/*-F+

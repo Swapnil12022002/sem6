@@ -1,0 +1,146 @@
+## Week 4 -
+
+### Write a Lex Program to count the number of characters, words, spaces, end of lines in a given input file.
+
+#### Code -
+
+```
+%{
+#include<stdio.h>
+#include<string.h>
+int char_count = 0, word_count = 0, line_count = 0, space_count = 0;
+%}
+
+char [a-zA-Z]
+digit [0-9]
+CHAR .
+word ({char}|{digit})+
+WORD [^ \t\n,.:]+
+line [\n]
+
+%%
+
+{char} { char_count++; word_count++; }
+\. { char_count++; }
+{WORD} { word_count++; char_count += strlen(yytext); }
+{line} { line_count++; }
+[ \t] { space_count++; }
+
+%%
+
+int main(int argc, char *argv[]) {
+    if (argc != 2) {
+        printf("Usage: %s <input_file>\n", argv[0]);
+        return 1;
+    }
+    FILE *inputFile = fopen(argv[1], "r");
+    if (!inputFile) {
+        perror("Error opening file");
+        return 1;
+    }
+    yyin = inputFile;
+    yylex();
+    printf("\nTotal Character: %d, Total Word: %d, Line Count: %d, Space Count: %d\n", char_count, word_count, line_count, space_count);
+    fclose(inputFile);
+    return 0;
+}
+
+int yywrap() {
+    return 1;
+}
+```
+
+#### Output -
+
+```
+a.exe file.txt
+
+Total Character: 33, Total Word: 12, Line Count: 2, Space Count: 9
+```
+
+### Write a Lex Program to count no of: a) +ve and –ve integers b) +ve and –ve fractions.
+
+#### Codes -
+
+#### a)
+
+```
+%{
+#include<stdio.h>
+int positive_count = 0;
+int negative_count = 0;
+%}
+
+positivedigit [+][0-9]+
+negativedigit [-][0-9]+
+
+%%
+
+{positivedigit} { positive_count++; }
+{negativedigit} { negative_count++; }
+
+%%
+
+int main()
+{
+    printf("\nEnter the Integers: ");
+    yylex();
+    printf("Number of Positive Numbers: %d\nNumber of Negative Numbers: %d\n", positive_count, negative_count);
+    return 0;
+}
+
+int yywrap()
+{
+    return 1;
+}
+
+```
+
+#### b)
+
+```
+%{
+    int positivefractions=0; 
+    int negativefractions=0; 
+%}
+DIGIT [0-9] 
+%%
+\+?{DIGIT}*\.{DIGIT}+   positivefractions++; 
+-{DIGIT}*\.{DIGIT}+     negativefractions++; 
+. ;    
+%% 
+int main() 
+{
+	printf("\nEnter the Fractions: ");
+    yylex();
+    printf("\nNumber of Positive Fractions: %d\nNumber of Negative Fractions: %d\n", positivefractions, negativefractions); 
+    return 0; 
+}
+int yywrap()
+{
+    return 1;
+}
+```
+
+#### Output -
+
+#### a)
+
+```
+Enter the Integers: +5+2+6-2-5-7-2
+
+^Z
+Number of Positive Numbers: 3
+Number of Negative Numbers: 4
+```
+
+#### b)
+
+```
+Enter the Fractions: +3.6+2.2-3.4-2.7
+
+^Z
+
+Number of Positive Fractions: 2
+Number of Negative Fractions: 2
+```
